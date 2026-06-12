@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "PropertyMapper",
+    "slug": "property-mapper",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#030712"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.propertymapper.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Used to photograph room walls for 3D property walkthroughs",
+        "NSPhotoLibraryUsageDescription": "Used to select floor plan images from your photo library"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#030712"
+      },
+      "package": "com.propertymapper.app",
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+    },
+    "plugins": [
+      "expo-image-picker"
+    ]
+  }
+}
