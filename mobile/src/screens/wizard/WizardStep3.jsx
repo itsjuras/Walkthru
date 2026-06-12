@@ -86,6 +86,7 @@ export default function WizardStep3({ navigation, route }) {
   const [uploading, setUploading] = useState({})
   const [mapLayout, setMapLayout] = useState({ width: SW, height: MAP_H })
   const [imgNatural, setImgNatural] = useState(null)
+  const [imageError, setImageError] = useState(false)
 
   useEffect(() => {
     Promise.all([propertiesApi.get(propertyId), roomsApi.list(propertyId)])
@@ -168,8 +169,6 @@ export default function WizardStep3({ navigation, route }) {
       </TouchableOpacity>
     </View>
   )
-
-  const [imageError, setImageError] = useState(false)
 
   const totalWalls  = rooms.length * 4
   const doneWalls   = rooms.reduce((s, r) => s + wallsDone(r), 0)
