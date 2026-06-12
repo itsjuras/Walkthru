@@ -22,9 +22,9 @@ router.get('/', async (req, res) => {
 // POST /api/properties
 router.post('/', async (req, res) => {
   const { title, address } = req.body
-  if (!title || !address) return res.status(400).json({ message: 'title and address required' })
+  if (!title) return res.status(400).json({ message: 'title required' })
   const property = await prisma.property.create({
-    data: { userId: req.userId, title, address },
+    data: { userId: req.userId, title, address: address || '' },
   })
   res.status(201).json(property)
 })
@@ -41,7 +41,7 @@ router.get('/:id', async (req, res) => {
 
 // PUT /api/properties/:id
 router.put('/:id', async (req, res) => {
-  const allowed = ['title', 'address', 'floorPlanUrl', 'floorPlanScale']
+  const allowed = ['title', 'address', 'floorPlanUrl', 'floorPlanScale', 'status']
   const data = {}
   for (const k of allowed) if (req.body[k] !== undefined) data[k] = req.body[k]
 
