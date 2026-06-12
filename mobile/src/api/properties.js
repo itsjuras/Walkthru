@@ -38,22 +38,21 @@ export const roomsApi = {
 
 export const extractApi = {
   extractRooms: async (imageUri) => {
-    // Resize to max 1024px and compress before sending — floor plans don't need full res
     const { manipulateAsync, SaveFormat } = await import('expo-image-manipulator')
+    const FileSystem = await import('expo-file-system')
+
+    // Resize to 1024px wide — Claude doesn't need full resolution
     const compressed = await manipulateAsync(
       imageUri,
       [{ resize: { width: 1024 } }],
       { compress: 0.8, format: SaveFormat.JPEG }
     )
 
-    const response = await fetch(compressed.uri)
-    const blob = await response.blob()
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result.split(',')[1])
-      reader.onerror = reject
-      reader.readAsDataURL(blob)
+    // Read as base64 using expo-file-system (FileReader doesn't exist in React Native)
+    const base64 = await FileSystem.readAsStringAsync(compressed.uri, {
+      encoding: FileSystem.EncodingType.Base64,
     })
+
     return api.post('/extract-rooms', { imageBase64: base64, mediaType: 'image/jpeg' })
   },
 }
