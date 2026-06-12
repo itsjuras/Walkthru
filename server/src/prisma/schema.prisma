@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -68,6 +69,23 @@ model Wall {
   @@unique([roomId, direction])
 }
 
-enum Role      { REALTOR ADMIN }
-enum Status    { DRAFT PROCESSING PUBLISHED ARCHIVED }
-enum Direction { NORTH SOUTH EAST WEST FLOOR CEILING }
+enum Role {
+  REALTOR
+  ADMIN
+}
+
+enum Status {
+  DRAFT
+  PROCESSING
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Direction {
+  NORTH
+  SOUTH
+  EAST
+  WEST
+  FLOOR
+  CEILING
+}
