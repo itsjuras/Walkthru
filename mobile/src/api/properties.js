@@ -40,16 +40,33 @@ export const roomsApi = {
 
 export const extractApi = {
   extractRooms: async (imageUri) => {
-    const compressed = await manipulateAsync(
-      imageUri,
-      [{ resize: { width: 1024 } }],
-      { compress: 0.8, format: SaveFormat.JPEG }
-    )
+    console.log('[extract] starting, imageUri:', imageUri)
 
-    const base64 = await FileSystem.readAsStringAsync(compressed.uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    })
+    let compressed
+    try {
+      compressed = await manipulateAsync(
+        imageUri,
+        [{ resize: { width: 1024 } }],
+        { compress: 0.8, format: SaveFormat.JPEG }
+      )
+      console.log('[extract] compressed uri:', compressed.uri)
+    } catch (e) {
+      console.error('[extract] manipulate failed:', e)
+      throw e
+    }
 
+    let base64
+    try {
+      base64 = await FileSystem.readAsStringAsync(compressed.uri, {
+        encoding: 'base64',
+      })
+      console.log('[extract] base64 length:', base64.length)
+    } catch (e) {
+      console.error('[extract] readAsString failed:', e)
+      throw e
+    }
+
+    console.log('[extract] posting to server...')
     return api.post('/extract-rooms', { imageBase64: base64, mediaType: 'image/jpeg' })
   },
 }
