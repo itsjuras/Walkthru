@@ -36,6 +36,10 @@ export const roomsApi = {
     api.delete(`/rooms/${roomId}/walls/${direction}`),
 }
 
+export const extractApi = {
+  extractRooms: (floorPlanUrl) => api.post('/extract-rooms', { floorPlanUrl }),
+}
+
 export const uploadApi = {
   floorPlan: async (imageUri, ext = 'jpg', propertyId) => {
     const formData = new FormData()

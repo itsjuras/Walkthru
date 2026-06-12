@@ -1,9 +1,10 @@
 import 'react-native-gesture-handler'
+import { registerRootComponent } from 'expo'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { StatusBar } from 'expo-status-bar'
 import Navigation from './src/navigation'
 
-export default function App() {
+function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar style="light" />
@@ -11,3 +12,5 @@ export default function App() {
     </GestureHandlerRootView>
   )
 }
+
+registerRootComponent(App)

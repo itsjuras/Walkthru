@@ -8,6 +8,7 @@ const propertyRoutes  = require('./routes/properties')
 const roomRoutes      = require('./routes/rooms')
 const shareRoutes     = require('./routes/share')
 const uploadRoutes    = require('./routes/upload')
+const extractRoutes   = require('./routes/extract')
 
 const app = express()
 
@@ -43,6 +44,7 @@ app.use('/api/properties',  propertyRoutes)
 app.use('/api',             roomRoutes)
 app.use('/api/share',       shareRoutes)
 app.use('/api/upload',      uploadRoutes)
+app.use('/api',            extractRoutes)
 
 // 404
 app.use((_, res) => res.status(404).json({ message: 'Not found' }))
