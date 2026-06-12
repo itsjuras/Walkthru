@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id @default(cuid())
+  email      String     @unique
+  password   String
+  name       String
+  role       Role       @default(REALTOR)
+  properties Property[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Property {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title           String
+  address         String
+  floorPlanUrl    String?
+  floorPlanScale  Float?    // pixels per meter
+  status          Status    @default(DRAFT)
+  shareToken      String    @unique @default(cuid())
+  sceneData       Json?     // generated 3D scene descriptor
+  rooms           Room[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  publishedAt     DateTime?
+}
+
+model Room {
+  id              String    @id @default(cuid())
+  propertyId      String
+  property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  name            String
+  order           Int       @default(0)
+  // Floor plan polygon — array of {x, y} in image pixel space
+  polygonPoints   Json?
+  // Real-world dimensions (meters), computed from polygon + scale
+  realWidthM      Float     @default(4.0)
+  realDepthM      Float     @default(4.0)
+  ceilingHeightM  Float     @default(2.4)
+  // 3D world position (set by scene builder)
+  worldX          Float     @default(0)
+  worldY          Float     @default(0)
+  worldZ          Float     @default(0)
+  walls           Wall[]
+  createdAt       DateTime  @default(now())
+}
+
+model Wall {
+  id         String    @id @default(cuid())
+  roomId     String
+  room       Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  direction  Direction
+  photoUrl   String?
+  photoNote  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([roomId, direction])
+}
+
+enum Role      { REALTOR ADMIN }
+enum Status    { DRAFT PROCESSING PUBLISHED ARCHIVED }
+enum Direction { NORTH SOUTH EAST WEST FLOOR CEILING }
