@@ -1,5 +1,4 @@
 import api from './client'
-import * as FileSystem from 'expo-file-system/legacy'
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator'
 
 export const authApi = {
@@ -40,34 +39,22 @@ export const roomsApi = {
 
 export const extractApi = {
   extractRooms: async (imageUri) => {
-    console.log('[extract] starting, imageUri:', imageUri)
+    const compressed = await manipulateAsync(
+      imageUri,
+      [{ resize: { width: 1024 } }],
+      { compress: 0.8, format: SaveFormat.JPEG }
+    )
 
-    let compressed
-    try {
-      compressed = await manipulateAsync(
-        imageUri,
-        [{ resize: { width: 1024 } }],
-        { compress: 0.8, format: SaveFormat.JPEG }
-      )
-      console.log('[extract] compressed uri:', compressed.uri)
-    } catch (e) {
-      console.error('[extract] manipulate failed:', e)
-      throw e
-    }
+    const formData = new FormData()
+    formData.append('image', {
+      uri: compressed.uri,
+      type: 'image/jpeg',
+      name: 'floorplan.jpg',
+    })
 
-    let base64
-    try {
-      base64 = await FileSystem.readAsStringAsync(compressed.uri, {
-        encoding: 'base64',
-      })
-      console.log('[extract] base64 length:', base64.length)
-    } catch (e) {
-      console.error('[extract] readAsString failed:', e)
-      throw e
-    }
-
-    console.log('[extract] posting to server...')
-    return api.post('/extract-rooms', { imageBase64: base64, mediaType: 'image/jpeg' })
+    return api.post('/extract-rooms', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
   },
 }
 
