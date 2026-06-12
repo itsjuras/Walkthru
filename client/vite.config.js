@@ -8,7 +8,7 @@ export default defineConfig({
     host: true,          // bind to 0.0.0.0 so your phone can reach it on the LAN
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: process.env.VITE_API_URL || 'http://localhost:3001',
         changeOrigin: true,
       },
     },

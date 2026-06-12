@@ -11,10 +11,16 @@ const uploadRoutes    = require('./routes/upload')
 
 const app = express()
 
-// Allow localhost and any LAN IP (10.x, 192.168.x, 172.x) during development
+const ALLOWED_ORIGINS = [
+  /^https?:\/\/(localhost|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01]))/,
+  /^https:\/\/.*\.vercel\.app$/,
+  /^https:\/\/.*\.up\.railway\.app$/,
+]
+if (process.env.CLIENT_URL) ALLOWED_ORIGINS.push(new RegExp(`^${process.env.CLIENT_URL.replace(/\./g, '\\.')}$`))
+
 app.use(cors({
   origin: (origin, cb) => {
-    if (!origin || /^https?:\/\/(localhost|10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01]))/.test(origin)) {
+    if (!origin || ALLOWED_ORIGINS.some(r => r.test(origin))) {
       cb(null, true)
     } else {
       cb(new Error(`CORS: origin ${origin} not allowed`))
