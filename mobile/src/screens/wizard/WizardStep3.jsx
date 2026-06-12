@@ -82,13 +82,13 @@ export default function WizardStep3({ navigation, route }) {
         Alert.alert('Permission required', 'Camera access is needed.')
         return
       }
-      result = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.85 })
+      result = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaType.Images, quality: 0.85 })
     } else {
       if (libStatus.status !== 'granted') {
         Alert.alert('Permission required', 'Photo library access is needed.')
         return
       }
-      result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.85 })
+      result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaType.Images, quality: 0.85 })
     }
     if (result.canceled) return
 
