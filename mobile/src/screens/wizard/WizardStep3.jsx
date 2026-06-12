@@ -169,12 +169,15 @@ export default function WizardStep3({ navigation, route }) {
     </View>
   )
 
-  const totalWalls = rooms.length * 4
-  const doneWalls  = rooms.reduce((s, r) => s + wallsDone(r), 0)
-  const remaining  = totalWalls - doneWalls
-  const canNext    = rooms.every(r => wallsDone(r) > 0)
-  const transform  = getTransform()
+  const [imageError, setImageError] = useState(false)
+
+  const totalWalls  = rooms.length * 4
+  const doneWalls   = rooms.reduce((s, r) => s + wallsDone(r), 0)
+  const remaining   = totalWalls - doneWalls
+  const canNext     = rooms.every(r => wallsDone(r) > 0)
+  const transform   = getTransform()
   const hasPolygons = rooms.some(r => r.polygonPoints?.length)
+  const showImage   = property?.floorPlanUrl && !imageError
 
   // ── ROOM DETAIL VIEW ───────────────────────────────────────────────────────
   if (selectedId) {
@@ -304,48 +307,68 @@ export default function WizardStep3({ navigation, route }) {
         style={[st.mapContainer, { height: MAP_H }]}
         onLayout={e => setMapLayout({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}
       >
-        {property?.floorPlanUrl ? (
-          <>
-            <Image
-              source={{ uri: property.floorPlanUrl }}
-              style={st.mapImage}
-              resizeMode="contain"
-            />
-            {transform && hasPolygons && (
-              <Svg style={StyleSheet.absoluteFill} pointerEvents="box-none">
-                {rooms.map(room => {
-                  const pts = room.polygonPoints
-                  if (!pts?.length) return null
-                  const status = roomStatus(room)
-                  const ctr = centroid(pts)
-                  return (
-                    <SvgG key={room.id} onPress={() => setSelectedId(room.id)}>
-                      <SvgPolygon
-                        points={polyPoints(pts, transform.sx, transform.sy, transform.ox, transform.oy)}
-                        fill={STATUS_FILL[status]}
-                        stroke={STATUS_STROKE[status]}
-                        strokeWidth="2"
-                      />
-                      <SvgText
-                        x={ctr.x * transform.sx + transform.ox}
-                        y={ctr.y * transform.sy + transform.oy}
-                        fontSize="10"
-                        fontWeight="600"
-                        fill="#ffffff"
-                        textAnchor="middle"
-                        alignmentBaseline="middle"
-                      >
-                        {room.name}
-                      </SvgText>
-                    </SvgG>
-                  )
-                })}
-              </Svg>
-            )}
-          </>
-        ) : (
-          <View style={st.noFloorPlan}>
-            <Text style={st.noFloorPlanText}>No floor plan uploaded</Text>
+        {/* Background image */}
+        {showImage && (
+          <Image
+            source={{ uri: property.floorPlanUrl }}
+            style={st.mapImage}
+            resizeMode="contain"
+            onError={() => setImageError(true)}
+          />
+        )}
+
+        {/* SVG polygon overlays — only when image loaded + rooms have polygons */}
+        {showImage && transform && hasPolygons && (
+          <Svg style={StyleSheet.absoluteFill}>
+            {rooms.map(room => {
+              const pts = room.polygonPoints
+              if (!pts?.length) return null
+              const status = roomStatus(room)
+              const ctr = centroid(pts)
+              return (
+                <SvgG key={room.id} onPress={() => setSelectedId(room.id)}>
+                  <SvgPolygon
+                    points={polyPoints(pts, transform.sx, transform.sy, transform.ox, transform.oy)}
+                    fill={STATUS_FILL[status]}
+                    stroke={STATUS_STROKE[status]}
+                    strokeWidth="2"
+                  />
+                  <SvgText
+                    x={ctr.x * transform.sx + transform.ox}
+                    y={ctr.y * transform.sy + transform.oy}
+                    fontSize="10"
+                    fontWeight="600"
+                    fill="#ffffff"
+                    textAnchor="middle"
+                    alignmentBaseline="middle"
+                  >
+                    {room.name}
+                  </SvgText>
+                </SvgG>
+              )
+            })}
+          </Svg>
+        )}
+
+        {/* Room card grid — shown when no polygon data (AI-detected rooms) */}
+        {(!hasPolygons || !showImage) && (
+          <View style={st.roomCardGrid}>
+            {rooms.map(room => {
+              const status = roomStatus(room)
+              const done = wallsDone(room)
+              return (
+                <TouchableOpacity
+                  key={room.id}
+                  style={[st.mapRoomCard, { borderColor: STATUS_STROKE[status] }]}
+                  onPress={() => setSelectedId(room.id)}
+                  activeOpacity={0.75}
+                >
+                  <View style={[st.mapRoomDot, { backgroundColor: STATUS_COLOR[status] }]} />
+                  <Text style={st.mapRoomName} numberOfLines={2}>{room.name}</Text>
+                  <Text style={st.mapRoomCount}>{done}/4</Text>
+                </TouchableOpacity>
+              )
+            })}
           </View>
         )}
       </View>
@@ -426,6 +449,25 @@ const st = StyleSheet.create({
   mapImage:       { width: '100%', height: '100%' },
   noFloorPlan:    { flex: 1, justifyContent: 'center', alignItems: 'center' },
   noFloorPlanText: { color: '#374151', fontSize: 14 },
+
+  roomCardGrid: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    flexDirection: 'row', flexWrap: 'wrap',
+    alignContent: 'center', justifyContent: 'center',
+    padding: 12, gap: 8,
+  },
+  mapRoomCard: {
+    backgroundColor: '#111827',
+    borderWidth: 1.5,
+    borderRadius: 10,
+    padding: 10,
+    width: (SW - 52) / 3,
+    alignItems: 'center',
+    gap: 4,
+  },
+  mapRoomDot:   { width: 8, height: 8, borderRadius: 4 },
+  mapRoomName:  { color: '#e5e7eb', fontSize: 11, fontWeight: '600', textAlign: 'center' },
+  mapRoomCount: { color: '#6b7280', fontSize: 10 },
 
   // Room list
   roomList:        { flex: 1 },
