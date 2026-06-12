@@ -38,8 +38,15 @@ export const roomsApi = {
 
 export const extractApi = {
   extractRooms: async (imageUri) => {
-    // Read the local image file and send as base64 — avoids Railway filesystem issues
-    const response = await fetch(imageUri)
+    // Resize to max 1024px and compress before sending — floor plans don't need full res
+    const { manipulateAsync, SaveFormat } = await import('expo-image-manipulator')
+    const compressed = await manipulateAsync(
+      imageUri,
+      [{ resize: { width: 1024 } }],
+      { compress: 0.8, format: SaveFormat.JPEG }
+    )
+
+    const response = await fetch(compressed.uri)
     const blob = await response.blob()
     const base64 = await new Promise((resolve, reject) => {
       const reader = new FileReader()
@@ -47,9 +54,7 @@ export const extractApi = {
       reader.onerror = reject
       reader.readAsDataURL(blob)
     })
-    const ext = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
-    const mediaType = ext === 'png' ? 'image/png' : 'image/jpeg'
-    return api.post('/extract-rooms', { imageBase64: base64, mediaType })
+    return api.post('/extract-rooms', { imageBase64: base64, mediaType: 'image/jpeg' })
   },
 }
 
