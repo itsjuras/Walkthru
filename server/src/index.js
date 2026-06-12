@@ -29,7 +29,8 @@ app.use(cors({
   },
   credentials: true,
 }))
-app.use(express.json({ limit: '20mb' }))
+app.use(express.json({ limit: '25mb' }))
+app.use(express.urlencoded({ limit: '25mb', extended: true }))
 
 // Serve uploaded files (dev only — use S3/CDN in production)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')))
