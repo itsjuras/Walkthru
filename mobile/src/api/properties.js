@@ -1,4 +1,6 @@
 import api from './client'
+import * as FileSystem from 'expo-file-system'
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator'
 
 export const authApi = {
   login:  (email, password)       => api.post('/auth/login',  { email, password }),
@@ -38,17 +40,12 @@ export const roomsApi = {
 
 export const extractApi = {
   extractRooms: async (imageUri) => {
-    const { manipulateAsync, SaveFormat } = await import('expo-image-manipulator')
-    const FileSystem = await import('expo-file-system')
-
-    // Resize to 1024px wide — Claude doesn't need full resolution
     const compressed = await manipulateAsync(
       imageUri,
       [{ resize: { width: 1024 } }],
       { compress: 0.8, format: SaveFormat.JPEG }
     )
 
-    // Read as base64 using expo-file-system (FileReader doesn't exist in React Native)
     const base64 = await FileSystem.readAsStringAsync(compressed.uri, {
       encoding: FileSystem.EncodingType.Base64,
     })
