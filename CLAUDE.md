@@ -4,9 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-### Server
+### Development
 ```bash
-npm run dev --workspace=server        # Express server on :3001
+npm run dev                           # Run server (:3001) + web client (:5173) concurrently
+npm run dev --workspace=server        # Server only
+npm run dev --workspace=client        # Web client only
+npm run install:all                   # Install deps for root + client + server workspaces
+```
+
+### Database
+```bash
 npm run db:push --workspace=server    # Apply schema changes to DB
 npm run db:studio --workspace=server  # Open Prisma Studio
 npm run db:generate --workspace=server # Regenerate Prisma client after schema edits
@@ -14,7 +21,6 @@ npm run db:generate --workspace=server # Regenerate Prisma client after schema e
 
 ### Web client (buyer viewer only)
 ```bash
-npm run dev --workspace=client        # Vite dev server on :5173
 npm run build --workspace=client
 ```
 
@@ -88,3 +94,4 @@ Expo SDK 51 / React Native 0.74. Entry point: [mobile/App.jsx](mobile/App.jsx). 
 - **Wall directions** — DB enum is `NORTH | SOUTH | EAST | WEST | FLOOR | CEILING`. The scene builder lowercases them as keys in the `walls` object. Rooms from the API include `walls: [{ direction, photoUrl }]` — an array, not flat fields.
 - **Room dimensions** — DB fields are `realWidthM` / `realDepthM` (not `widthM`/`depthM`). Derived from polygon bounding box ÷ `floorPlanScale` during the tracing step; stored at create time.
 - **Floor plan scale** — stored on `Property.floorPlanScale` (pixels/meter). Set by the mobile Step2 wizard via `PUT /api/properties/:id`.
+- **ARCHITECTURE.md** — original pre-split planning document. The browser wizard it describes was replaced by the mobile app; treat it as historical context, not current truth.
