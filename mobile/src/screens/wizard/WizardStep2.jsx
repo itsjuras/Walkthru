@@ -60,7 +60,7 @@ export default function WizardStep2({ navigation, route }) {
     }
     setMode('detecting')
     try {
-      const res = await extractApi.extractRooms(floorPlanUrl)
+      const res = await extractApi.extractRooms(imageUri)
       const rooms = (res.data.rooms || []).map((r, i) => ({
         id: i,
         name: r.name || 'Room',

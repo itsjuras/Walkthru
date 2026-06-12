@@ -46,12 +46,19 @@ function feetInchesToMeters(str) {
 
 // POST /api/extract-rooms
 router.post('/extract-rooms', async (req, res) => {
-  const { floorPlanUrl } = req.body
-  if (!floorPlanUrl) return res.status(400).json({ message: 'floorPlanUrl required' })
+  const { floorPlanUrl, imageBase64, mediaType: clientMediaType } = req.body
+  if (!floorPlanUrl && !imageBase64) return res.status(400).json({ message: 'floorPlanUrl or imageBase64 required' })
 
   try {
-    const base64 = await imageToBase64(floorPlanUrl)
-    const mediaType = floorPlanUrl.match(/\.png$/i) ? 'image/png' : 'image/jpeg'
+    let base64, mediaType
+    if (imageBase64) {
+      // Client sent image directly — no network fetch needed
+      base64 = imageBase64
+      mediaType = clientMediaType || 'image/jpeg'
+    } else {
+      base64 = await imageToBase64(floorPlanUrl)
+      mediaType = floorPlanUrl.match(/\.png$/i) ? 'image/png' : 'image/jpeg'
+    }
 
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',

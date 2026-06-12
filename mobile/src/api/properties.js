@@ -37,7 +37,20 @@ export const roomsApi = {
 }
 
 export const extractApi = {
-  extractRooms: (floorPlanUrl) => api.post('/extract-rooms', { floorPlanUrl }),
+  extractRooms: async (imageUri) => {
+    // Read the local image file and send as base64 — avoids Railway filesystem issues
+    const response = await fetch(imageUri)
+    const blob = await response.blob()
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result.split(',')[1])
+      reader.onerror = reject
+      reader.readAsDataURL(blob)
+    })
+    const ext = imageUri.split('.').pop()?.toLowerCase() || 'jpg'
+    const mediaType = ext === 'png' ? 'image/png' : 'image/jpeg'
+    return api.post('/extract-rooms', { imageBase64: base64, mediaType })
+  },
 }
 
 export const uploadApi = {
